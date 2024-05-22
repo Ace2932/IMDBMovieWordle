@@ -1,0 +1,235 @@
+
+
+// setScreen("endScreen");
+
+var posterLinksList = getColumn("IMDB Top 1000", "Poster_Link");
+var titleList = getColumn("IMDB Top 1000", "Series_Title");
+var yearList = getColumn("IMDB Top 1000","Released_Year");
+var runtimeList = getColumn("IMDB Top 1000", "Runtime");
+var genreList = getColumn("IMDB Top 1000", "Genre");
+var IMDBList = getColumn("IMDB Top 1000", "IMDB_Rating");
+
+var guessGenres = [];
+var answerGenres = [];
+var genreString = "";
+
+var answerList = [];
+
+var k = 0;
+var beginning, end;
+
+
+
+function initialize(){
+  for(var i = 1; i < 5; i++){
+    setProperty("RYBox" + i, "icon-color", "#EADCDC");
+    setProperty("yText" + i, "text", "");
+    
+    setProperty("gBox" + i, "icon-color", "#EADCDC");
+    setProperty("gText" + i, "text", "");
+    
+    setProperty("rBox" + i, "icon-color", "#EADCDC");
+    setProperty("rText" + i, "text", "");
+    
+    setProperty("IMDB" + i, "icon-color", "#EADCDC");
+    setProperty("IMDBText" + i, "text", "");
+    
+    setProperty("answerDropdown", "options", titleList);
+    // setProperty("possibleGuessArea", )
+  }
+  
+  createAnswer();
+}
+
+
+function createAnswer(){
+  var idNum = randomNumber(1, 1000);
+  setProperty("moviePoster", "image", posterLinksList[idNum]);
+  setProperty("moviePosterWin", "image", posterLinksList[idNum]);
+  answerList = [idNum, titleList[idNum], yearList[idNum], runtimeList[idNum],
+                genreList[idNum], IMDBList[idNum]];
+}
+
+
+function checkGuess(MovieID, guessNumber){
+    //remove possible guesses that wont fit criteria?
+    
+    if(MovieID == answerList[0]){
+      
+      setScreen("winScreen");
+      return true;
+    }
+    //forces to not run anything below
+    if(guessNumber >= 4){
+      setScreen("endScreen");
+      return false;
+    }                                
+    
+    
+    //year list, turns yellow if within 5 years on either side
+    if(yearList[MovieID] > answerList[2] - 5 && yearList[MovieID] < answerList[2] + 5){
+      setProperty("RYBox" + guessNumber, "icon-color", "yellow");
+    }
+    
+    if(yearList[MovieID] == answerList[2]){
+      setProperty("RYBox" + guessNumber, "icon-color", "green");
+      setProperty("yText" + guessNumber, "text", "Equal");
+    } else if(yearList[MovieID] < answerList[2]){
+      setProperty("yText" + guessNumber, "text", "2 Low");
+    } else if(yearList[MovieID] > answerList[2]){
+      setProperty("yText" + guessNumber, "text", "2 High");
+    }
+    
+    
+        //genre list, turns yellow if at least one genre is matching
+        //doesnt work sad times
+    if(genreList[MovieID] == answerList[4]){
+      setProperty("gBox" + guessNumber, "icon-color", "green");
+    } 
+    else {
+      
+      guessGenres = [];
+      genreString = genreList[MovieID];
+      
+      end = genreString.indexOf(",");
+      
+      
+      while(end > 0){
+        console.log(genreString);
+        appendItem(guessGenres, genreString.substring(0, end));
+        end = end + 1;
+        genreString = genreString.substring(end, genreString.length);
+        genreString = genreString.replace(" ", "");
+        end = genreString.indexOf(",");
+      }
+      
+      appendItem(guessGenres, genreString);
+      
+      
+      //same but for answer
+      if(guessNumber == 1){
+        genreString = answerList[4];
+      
+        end = genreString.indexOf(",");
+      
+        while(end > 0){
+          console.log(genreString);
+          appendItem(answerGenres, genreString.substring(0, end));
+          end = end + 1;
+          genreString = genreString.substring(end, genreString.length);
+          genreString = genreString.replace(" ", "");
+          end = genreString.indexOf(",");
+        }
+        appendItem(answerGenres, genreString);
+      
+      }
+      
+      
+      
+      
+      
+        // guessGenres = segmentString(genreList[MovieID]);
+        
+        // answerGenres = segmentString(answerList[4]);
+        console.log("guessGenres");
+        console.log(guessGenres);
+        console.log("Answer genres");
+        console.log(answerGenres);
+        for(var i = 0; i < guessGenres.length; i++){
+          for(var m = 0; m < answerGenres.length; m++){
+            if(guessGenres[i] == answerGenres[m]){
+              setProperty("gBox" + guessNumber, "icon-color", "yellow");
+            }
+          }
+        }
+        
+    }
+    setProperty("gText"+ guessNumber, "text", genreList[MovieID]);
+    
+    
+    
+    //runtime list, turns yellow if within 10 minutes on either sides
+    if(runtimeList[MovieID] > answerList[3] - 10 && runtimeList[MovieID] < answerList[3] + 10){
+      setProperty("RYBox" + guessNumber, "icon-color", "yellow");
+    }
+    if(runtimeList[MovieID] == answerList[3]){
+      setProperty("rBox" + guessNumber, "icon-color", "green");
+    } else if(runtimeList[MovieID] < answerList[3]){
+      setProperty("rText" + guessNumber, "text", "2 Low");
+    } else if(runtimeList[MovieID] > answerList[3]){
+      setProperty("rText" + guessNumber, "text", "2 High");
+    }
+    
+    
+
+    
+    
+    //turns yellow if within 0.5 on either side 
+    if(IMDBList[MovieID] == answerList[5]){
+      setProperty("IMDB" + guessNumber, "icon-color", "green");
+      setProperty("IMDB" + guessNumber, "text", "Equal");
+    } else if(IMDBList[MovieID] < (answerList[5] + 0.5) && IMDBList[MovieID] > (answerList[5] - 0.5)){
+      setProperty("IMDB" + guessNumber, "icon-color", "yellow");
+    }
+    if(IMDBList[MovieID] < answerList[5]){
+      setText("IMDBText" + guessNumber, "2 Low");
+    } else if(IMDBList[MovieID] > answerList[5]){
+      setText("IMDBText" + guessNumber, "2 High");
+    }
+  
+  
+}
+
+
+// function segmentString(stringOfGenre){
+  
+//   var johns = [];
+//   var beginning = 0;
+//   var end = stringOfGenre.indexOf(",");
+//   while (end > 0){
+//     appendItem(johns, stringOfGenre.substring(beginning, end));
+//     stringOfGenre = stringOfGenre.substring(end, stringOfGenre.length);
+//     beginning = end + 1;
+//     end = stringOfGenre.indexOf(",");
+//     // console.log("This is looping forever");
+//   }
+//   return johns;
+// }
+
+
+
+
+
+onEvent("submitGuessButton", "click", function(){
+  k++;
+  checkGuess(findMovieID(getText("answerDropdown")), k);
+  setText("guessArea", "");
+});
+
+
+// function incrementGuess(varToIncrement){
+
+//   return varToIncrement + 1;
+// }
+
+
+//All good, works
+function findMovieID(movieTitle){
+  for(var i = 0; i < titleList.length; i++){
+    if(movieTitle == titleList[i]){
+      return (i); //maybe, just think it is this since id starts at 1 and list starts at 0. 
+      //Changed back since we use it to access other lists so they should be lined up.
+    }
+  }
+}
+
+
+
+initialize();
+
+
+
+console.log(answerList);
+
+
+
