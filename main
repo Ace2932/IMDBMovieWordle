@@ -82,7 +82,6 @@ function checkGuess(MovieID, guessNumber){
     
     
         //genre list, turns yellow if at least one genre is matching
-        //doesnt work sad times
     if(genreList[MovieID] == answerList[4]){
       setProperty("gBox" + guessNumber, "icon-color", "green");
     } 
